@@ -1,0 +1,29 @@
+name: "Master Pipeline"
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environment"
+        required: true
+        type: choice
+        options:
+          - dev
+          - qa
+          - prod
+
+      working_directory:
+        description: "Terraform Folder"
+        required: false
+        default: "."
+        type: string
+
+jobs:
+  tflint:
+    uses: aayuORG1/project1/.github/workflows/docker-tflint.yml@main
+
+    with:
+      environment: ${{ inputs.environment }}
+      working_directory: ${{ inputs.working_directory }}
+
+    secrets: inherit
