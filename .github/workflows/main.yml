@@ -17,13 +17,15 @@ on:
         required: false
         default: "."
         type: string
+        
+permissions:
+  id-token: write
+  contents: read       
 
 jobs:
   tflint:
     uses: aayuORG1/project1/.github/workflows/docker-tflint.yml@main
-
     with:
       environment: ${{ inputs.environment }}
       working_directory: ${{ inputs.working_directory }}
-
     secrets: inherit
