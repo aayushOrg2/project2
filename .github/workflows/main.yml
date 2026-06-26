@@ -32,4 +32,4 @@ jobs:
       ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
       ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
       TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
-      token: ${{ secrets.GITHUB_TOKEN }}
+      token: ${{ secrets.ACTION_TOKEN}}
