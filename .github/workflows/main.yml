@@ -11,11 +11,6 @@ on:
           - dev
           - qa
           - prod
-      organization:
-        description: "Terraform Cloud Organization"
-        required: true
-        type: string  
-        
       working_directory:
         description: "Terraform Folder"
         required: false
@@ -28,83 +23,59 @@ permissions:
   actions: read
 
 jobs:
-  terraform_cloud_bootstrap:   
-    uses: aayuORG1/project1/.github/workflows/docker-tf-cloud-bootstrap.yml@main
-    with:
-      environment: ${{ inputs.environment }}
-      working_directory: ${{ inputs.working_directory }}
-    secrets:     
-      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
-      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
-      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-      TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
-      
-
   tflint:
     uses: aayuORG1/project1/.github/workflows/docker-tflint.yml@main
-    needs: [terraform_cloud_bootstrap]
     with:
       environment: ${{ inputs.environment }}
       working_directory: ${{ inputs.working_directory }}
-    secrets:     
+    secrets:
       ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
       ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
       ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
       TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
-      
 
   tfsec:
     uses: aayuORG1/project1/.github/workflows/docker-tfsec.yml@main
-    needs: [terraform_cloud_bootstrap]
     with:
       environment: ${{ inputs.environment }}
       working_directory: ${{ inputs.working_directory }}
-    secrets:     
+    secrets:
       ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
       ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
       ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
       TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
-     
 
   tftest:
     uses: aayuORG1/project1/.github/workflows/docker-tftest.yml@main
-    needs: [terraform_cloud_bootstrap]
     with:
       environment: ${{ inputs.environment }}
       working_directory: ${{ inputs.working_directory }}
-    secrets:     
+    secrets:
       ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
       ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
       ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
       TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
-        
 
-  tfinit_validate_plan:   
+  tfinit_validate_plan:
     uses: aayuORG1/project1/.github/workflows/docker-tf-plan.yml@main
-    needs: [terraform_cloud_bootstrap,tflint,tfsec,tftest]
+    needs: [tflint, tfsec, tftest]
     with:
       environment: ${{ inputs.environment }}
       working_directory: ${{ inputs.working_directory }}
-    secrets:     
+    secrets:
       ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
       ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
       ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
       TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
-      
 
-  opa-policy-evaluation:   
+  opa-policy-evaluation:
     uses: aayuORG1/project1/.github/workflows/docker-opa-policy.yml@main
-    needs: [terraform_cloud_bootstrap,tflint,tfsec,tftest,tfinit_validate_plan]
+    needs: [tflint, tfsec, tftest, tfinit_validate_plan]
     with:
       environment: ${{ inputs.environment }}
       working_directory: ${{ inputs.working_directory }}
-    secrets:     
+    secrets:
       ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
       ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
       ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
       TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
-     
-
- 
-
-      
