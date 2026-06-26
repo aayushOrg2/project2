@@ -11,6 +11,11 @@ on:
           - dev
           - qa
           - prod
+      organization:
+        description: "Terraform Cloud Organization"
+        required: true
+        type: string  
+        
       working_directory:
         description: "Terraform Folder"
         required: false
