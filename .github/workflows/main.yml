@@ -11,24 +11,15 @@ on:
           - dev
           - qa
           - prod
-
       working_directory:
         description: "Terraform Folder"
         required: false
         default: "."
         type: string
-        
+
 permissions:
   id-token: write
-  contents: read 
-  
-env:
-      TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
-      TF_WORKSPACE: statefile-${{ inputs.environment }}
-      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
-      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
-      ARM_USE_OIDC: "true"  
+  contents: read
 
 jobs:
   tflint:
@@ -36,4 +27,8 @@ jobs:
     with:
       environment: ${{ inputs.environment }}
       working_directory: ${{ inputs.working_directory }}
-    secrets: inherit
+    secrets:     
+      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+      TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
