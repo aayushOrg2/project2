@@ -1,4 +1,4 @@
-name: "Master Pipeline"
+name: "Workspace Pipeline"
 
 on:
   workflow_dispatch:
