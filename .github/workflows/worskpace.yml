@@ -33,6 +33,7 @@ jobs:
     with:
       environment: ${{ inputs.environment }}
       working_directory: ${{ inputs.working_directory }}
+      organization: ${{ inputs.organization }}
     secrets:     
       ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
       ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
