@@ -1,0 +1,41 @@
+name: "Master Pipeline"
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environment"
+        required: true
+        type: choice
+        options:
+          - dev
+          - qa
+          - prod
+      organization:
+        description: "Terraform Cloud Organization"
+        required: true
+        type: string  
+        
+      working_directory:
+        description: "Terraform Folder"
+        required: false
+        default: "."
+        type: string
+
+permissions:
+  id-token: write
+  contents: read
+  actions: read
+
+jobs:
+  terraform_cloud_bootstrap:   
+    uses: aayuORG1/project1/.github/workflows/docker-tf-cloud-bootstrap.yml@main
+    with:
+      environment: ${{ inputs.environment }}
+      working_directory: ${{ inputs.working_directory }}
+    secrets:     
+      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+      TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
+      
