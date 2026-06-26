@@ -23,7 +23,7 @@ permissions:
 
 jobs:
   tflint:
-    uses: aayuORG1/project1/.github/workflows/docker-tflint.yml@main
+    uses: aayuORG1/project1/blob/main/.github/workflows/docker-tflint.yml@main
     with:
       environment: ${{ inputs.environment }}
       working_directory: ${{ inputs.working_directory }}
