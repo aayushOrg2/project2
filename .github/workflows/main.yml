@@ -92,7 +92,7 @@ jobs:
     needs: [opa-policy-evaluation]
     uses: aayuORG1/project1/.github/workflows/docker-tf-approve.yml@main
     with:
-      environment: ${{ inputs.environment }}
+      environment: approval
       secrets: inherit
 
   tf_apply:
