@@ -111,8 +111,8 @@ jobs:
       ARM_SUBSCRIPTION_ID: ${{ vars.ARM_SUBSCRIPTION_ID }}
       TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
     
-  tf_destroy:
-    needs: [tf_apply]
+  #tf_destroy:
+    #needs: [tf_apply]
     if: github.event.inputs.action == 'destroy'
     uses: aayuORG1/project1/.github/workflows/docker-tf-destroy.yml@main
     with:
