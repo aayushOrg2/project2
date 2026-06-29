@@ -60,18 +60,18 @@ jobs:
     needs: validate
     uses: aayuORG1/project1/.github/workflows/docker-tflint.yml@main
     with:
-      environment: "dev"
+      environment: ${{ inputs.environment }} 
       working_directory: "modules/${{ inputs.module_name || 'resource-group' }}"
     secrets: 
       TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
       ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
       ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
       ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
-  trivy:
+  tfsec:
     needs: tflint
     uses: aayuORG1/project1/.github/workflows/docker-tfsec.yml@main
     with:
-      environment: "dev"
+      environment: ${{ inputs.environment }} 
       working_directory: "modules/${{ inputs.module_name || 'resource-group' }}"
     secrets: 
       TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
@@ -80,10 +80,10 @@ jobs:
       ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
 
   terraform-test:
-    needs: trivy
+    needs: tfsec
     uses: aayuORG1/project1/.github/workflows/docker-tftest.yml@main
     with:
-      environment: "dev"
+      environment: ${{ inputs.environment }} 
       working_directory: "modules/${{ inputs.module_name || 'resource-group' }}"
     secrets: 
       TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
@@ -94,7 +94,7 @@ jobs:
     needs: terraform-test
     uses: aayuORG1/project1/.github/workflows/docker-tf-plan.yml@main
     with:
-      environment: "dev"
+      environment: ${{ inputs.environment }} 
       working_directory: "modules/${{ inputs.module_name || 'resource-group' }}"
     secrets: 
       TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
