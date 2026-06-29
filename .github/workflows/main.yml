@@ -30,17 +30,8 @@ permissions:
   contents: read
   actions: read
 
-jobs:
-  path-environment:
-    uses: aayuORG1/project1/.github/workflows/path-environment.yml@main
-    with:
-      environment: ${{ inputs.environment }}
-      working_directory: ${{ inputs.working_directory }}
-    secrets:
-      ARM_CLIENT_ID: ${{ vars.ARM_CLIENT_ID }}
-      ARM_TENANT_ID: ${{ vars.ARM_TENANT_ID }}
-      ARM_SUBSCRIPTION_ID: ${{ vars.ARM_SUBSCRIPTION_ID }}
-      TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
+jobs:  
+  
   tflint:
     uses: aayuORG1/project1/.github/workflows/docker-tflint.yml@main
     with:
