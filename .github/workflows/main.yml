@@ -17,8 +17,8 @@ on:
         type: choice
         options:
           - dev
-          - qa
-          - prod
+          - sit
+          - production
       working_directory:
         description: "Terraform Folder"
         required: false
