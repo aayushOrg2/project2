@@ -31,24 +31,24 @@ permissions:
   contents: read
 
 jobs:
-  bootstrap:
-    uses: aayuORG1/project1/.github/workflows/docker-tf-cloud-bootstrap.yml@main
-    with:
-      organization: ${{ inputs.organization }}
+ # bootstrap:
+  #  uses: aayuORG1/project1/.github/workflows/docker-tf-cloud-bootstrap.yml@main
+  #  with:
+    #  organization: ${{ inputs.organization }}
       # यहाँ environment इनपुट की कमी थी, इसे जोड़ें:
-      environment: ${{ inputs.environment }} 
-      working_directory: "modules/${{ inputs.module_name || 'resource-group' }}"
-    secrets: 
-      TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
-      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
-      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+    #  environment: ${{ inputs.environment }} 
+    #  working_directory: "modules/${{ inputs.module_name || 'resource-group' }}"
+   # secrets: 
+   #   TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
+   #   ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+   #   ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+   #   ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
 
   validate:
-    needs: bootstrap
+   # needs: bootstrap
     uses: aayuORG1/project1/.github/workflows/docker-tf-plan.yml@main
     with:
-      environment: "dev"
+      environment: ${{ inputs.environment }} 
       working_directory: "modules/${{ inputs.module_name || 'resource-group' }}"
     secrets: 
       TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
