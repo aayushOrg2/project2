@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       module_name:
-        description: "Select Module"
+        description: "Child module name"
         required: true
         default: "resource-group"
         type: choice
@@ -19,44 +19,51 @@ permissions:
   contents: read
 
 jobs:
-  # 1. Bootstrap (Terraform Cloud Workspace Setup)
   bootstrap:
     uses: aayuORG1/project1/.github/workflows/docker-tf-cloud-bootstrap.yml@main
     with:
       organization: "HCL-TERRA-TEAM"
-      environment: "dev" # या input से लें
+      # यहाँ environment इनपुट की कमी थी, इसे जोड़ें:
+      environment: "dev" 
+      working_directory: "modules/${{ inputs.module_name || 'resource-group' }}"
+    secrets: inherit # 'inherit' का उपयोग करना सबसे आसान है
+
+  validate:
+    needs: bootstrap
+    uses: aayuORG1/project1/.github/workflows/docker-tf-plan.yml@main
+    with:
+      environment: "dev"
       working_directory: "modules/${{ inputs.module_name || 'resource-group' }}"
     secrets: inherit
 
-  # 2. Quality Checks (TFLint)
   tflint:
-    needs: bootstrap
+    needs: validate
     uses: aayuORG1/project1/.github/workflows/docker-tflint.yml@main
     with:
+      environment: "dev"
       working_directory: "modules/${{ inputs.module_name || 'resource-group' }}"
     secrets: inherit
 
-  # 3. Security Scan (TFSec)
-  tfsec:
+  trivy:
     needs: tflint
     uses: aayuORG1/project1/.github/workflows/docker-tfsec.yml@main
     with:
+      environment: "dev"
       working_directory: "modules/${{ inputs.module_name || 'resource-group' }}"
     secrets: inherit
 
-  # 4. Terraform Plan
+  terraform-test:
+    needs: trivy
+    uses: aayuORG1/project1/.github/workflows/docker-tftest.yml@main
+    with:
+      environment: "dev"
+      working_directory: "modules/${{ inputs.module_name || 'resource-group' }}"
+    secrets: inherit
+
   plan:
-    needs: tfsec
+    needs: terraform-test
     uses: aayuORG1/project1/.github/workflows/docker-tf-plan.yml@main
     with:
-      working_directory: "modules/${{ inputs.module_name || 'resource-group' }}"
-    secrets: inherit
-
-  # 5. Apply (Optional - सिर्फ main में मर्ज होने पर)
-  apply:
-    needs: plan
-    if: github.ref == 'refs/heads/main'
-    uses: aayuORG1/project1/.github/workflows/docker-tf-apply.yml@main
-    with:
+      environment: "dev"
       working_directory: "modules/${{ inputs.module_name || 'resource-group' }}"
     secrets: inherit
