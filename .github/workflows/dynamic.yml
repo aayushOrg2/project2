@@ -1,0 +1,82 @@
+name: "Master Pipeline"
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Choose action"
+        required: true
+        default: "apply"
+        type: choice
+        options: [apply, destroy]
+      environment:
+        description: "Environment"
+        required: true
+        type: choice
+        options: [dev, sit, production]
+
+permissions:
+  id-token: write
+  contents: read
+  actions: read
+
+jobs:
+  # 1. डायनामिक डिस्कवरी जॉब
+  discover-resources:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: set-matrix
+        run: |
+          # यह आपके modules/ फोल्डर के अंदर से सभी रिसोर्स पिक करेगा
+          # और workspace का नाम: {folder_name}-{environment} बना देगा
+          ENV="${{ inputs.environment }}"
+          JSON_OUTPUT=$(ls -d modules/* | jq -R . | jq -s -c --arg env "$ENV" 'map({dir: ., ws: (. | split("/") | last + "-" + $env)})')
+          echo "matrix=$JSON_OUTPUT" >> $GITHUB_OUTPUT
+
+  # 2. सभी रिसोर्स के लिए प्लान (पैरेलल चलेगा)
+  tfinit_validate_plan:
+    needs: discover-resources
+    strategy:
+      matrix:
+        resource: ${{ fromJSON(needs.discover-resources.outputs.matrix) }}
+    uses: aayuORG1/project1/.github/workflows/docker-tf-plan.yml@main
+    with:
+      environment: ${{ inputs.environment }}
+      working_directory: ${{ matrix.resource.dir }}
+      workspace_name: ${{ matrix.resource.ws }}
+    secrets: inherit
+
+  # 3. अप्रूवल और वर्ज़निंग
+  manual-validation:
+    needs: [tfinit_validate_plan]
+    uses: aayuORG1/project1/.github/workflows/docker-tf-approve.yml@main
+    with:
+      environment: approval
+    secrets: inherit
+
+  # 4. डिप्लॉयमेंट (Apply)
+  tf_apply:
+    needs: [manual-validation]
+    strategy:
+      matrix:
+        resource: ${{ fromJSON(needs.discover-resources.outputs.matrix) }}
+    uses: aayuORG1/project1/.github/workflows/docker-tf-apply.yml@main
+    with:
+      environment: ${{ inputs.environment }}
+      working_directory: ${{ matrix.resource.dir }}
+      workspace_name: ${{ matrix.resource.ws }}
+    secrets: inherit
+
+  # 5. Semantic Versioning (Main ब्रांच में मर्ज होने के बाद या रिलीज पर)
+  tag-version:
+    needs: [tf_apply]
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Bump version and push tag
+        uses: mathieudutour/github-tag-action@v6.1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
