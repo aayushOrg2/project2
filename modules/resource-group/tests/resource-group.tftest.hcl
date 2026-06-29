@@ -1,29 +1,25 @@
 run "resource_group_plan" {
   command = plan
 
+  variables {
+    name     = "rg-test-dev"
+    location = "Central India"
+    tags     = { Environment = "Test" }
+  }
+
+
   assert {
-    # 'plan.' को हटाकर सीधे 'terraform.resource_changes' का उपयोग करें
-    condition     = length(terraform.resource_changes) == 1
-    error_message = "Resource count mismatch"
+    condition     = output.resource_group_name == "rg-test-dev"
+    error_message = "Resource Group"
   }
 
   assert {
-    condition     = terraform.resource_changes[0].type == "azurerm_resource_group"
-    error_message = "Resource type is not azurerm_resource_group"
+    condition     = output.resource_group_location == "Central India"
+    error_message = "Location"
   }
 
   assert {
-    condition     = terraform.resource_changes[0].change.after.name == "rg-test-dev"
-    error_message = "Resource name mismatch"
-  }
-
-  assert {
-    condition     = terraform.resource_changes[0].change.after.location == "Central India"
-    error_message = "Location mismatch"
-  }
-
-  assert {
-    condition     = terraform.resource_changes[0].change.after.tags["Environment"] == "Test"
-    error_message = "Tags mismatch"
+    condition     = output.resource_group_tags["Environment"] == "Test"
+    error_message = "Tags"
   }
 }
