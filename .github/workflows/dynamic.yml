@@ -57,26 +57,5 @@ jobs:
       environment: approval
     secrets: inherit
 
-  # 4. डिप्लॉयमेंट (Apply)
-  tf_apply:
-    needs: [manual-validation]
-    strategy:
-      matrix:
-        resource: ${{ fromJSON(needs.discover-resources.outputs.matrix) }}
-    uses: aayuORG1/project1/.github/workflows/docker-tf-apply.yml@main
-    with:
-      environment: ${{ inputs.environment }}
-      working_directory: ${{ matrix.resource.dir }}
-      workspace_name: ${{ matrix.resource.ws }}
-    secrets: inherit
 
-  # 5. Semantic Versioning (Main ब्रांच में मर्ज होने के बाद या रिलीज पर)
-  tag-version:
-    needs: [tf_apply]
-    if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Bump version and push tag
-        uses: mathieudutour/github-tag-action@v6.1
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+
