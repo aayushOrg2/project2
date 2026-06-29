@@ -36,26 +36,4 @@ jobs:
           JSON_OUTPUT=$(ls -d modules/* | jq -R . | jq -s -c --arg env "$ENV" 'map({dir: ., ws: (. | split("/") | last + "-" + $env)})')
           echo "matrix=$JSON_OUTPUT" >> $GITHUB_OUTPUT
 
-  # 2. सभी रिसोर्स के लिए प्लान (पैरेलल चलेगा)
-  tfinit_validate_plan:
-    needs: discover-resources
-    strategy:
-      matrix:
-        resource: ${{ fromJSON(needs.discover-resources.outputs.matrix) }}
-    uses: aayuORG1/project1/.github/workflows/docker-tf-plan.yml@main
-    with:
-      environment: ${{ inputs.environment }}
-      working_directory: ${{ matrix.resource.dir }}
-      workspace_name: ${{ matrix.resource.ws }}
-    secrets: inherit
-
-  # 3. अप्रूवल और वर्ज़निंग
-  manual-validation:
-    needs: [tfinit_validate_plan]
-    uses: aayuORG1/project1/.github/workflows/docker-tf-approve.yml@main
-    with:
-      environment: approval
-    secrets: inherit
-
-
-
+  
