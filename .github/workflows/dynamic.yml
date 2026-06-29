@@ -31,25 +31,20 @@ jobs:
       - id: set-matrix
         run: |
           ENV="${{ inputs.environment }}"
-          # यह कमांड सुनिश्चित करती है कि केवल फोल्डर ही पिक हों
           JSON_OUTPUT=$(ls -d modules/* | grep "/" | jq -R . | jq -s -c --arg env "$ENV" 'map({dir: ., ws: (. | split("/") | last + "-" + $env)})')
           echo "matrix=$JSON_OUTPUT" >> $GITHUB_OUTPUT
 
-
+  # 2. tflint जॉब (अब बिल्कुल सही स्ट्रक्चर है)
   tflint:
     needs: discover-resources
-    runs-on: ubuntu-latest
     strategy:
       matrix:
+        # यहाँ हम matrix डिफाइन कर रहे हैं
         resource: ${{ fromJSON(needs.discover-resources.outputs.matrix) }}
-    steps:
-      - name: Call TFLint Workflow
-        uses: aayuORG1/project1/.github/workflows/docker-tflint.yml@main
-        with:
-          environment: ${{ inputs.environment }}
-          working_directory: ${{ matrix.resource.dir }}
-        secrets:
-          ARM_CLIENT_ID: ${{ vars.ARM_CLIENT_ID }}
-          ARM_TENANT_ID: ${{ vars.ARM_TENANT_ID }}
-          ARM_SUBSCRIPTION_ID: ${{ vars.ARM_SUBSCRIPTION_ID }}
-          TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
+    
+    # 'uses' को सीधे जॉब लेवल पर रखें (यहाँ runs-on और steps नहीं होने चाहिए)
+    uses: aayuORG1/project1/.github/workflows/docker-tflint.yml@main
+    with:
+      environment: ${{ inputs.environment }}
+      working_directory: ${{ matrix.resource.dir }}
+    secrets: inherit
