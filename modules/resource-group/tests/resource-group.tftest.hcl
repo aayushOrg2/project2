@@ -1,32 +1,18 @@
-run "resource_group_plan" {
-  command = plan
-
-  plan "rg_plan" {
-    command = plan
-  }
+run "resource_group_apply" {
+  command = apply
 
   assert {
-    condition     = length(rg_plan.resource_changes) == 1
-    error_message = "Expected exactly one resource change for the resource group."
-  }
-
-  assert {
-    condition     = rg_plan.resource_changes[0].type == "azurerm_resource_group"
-    error_message = "The resource type is not azurerm_resource_group."
-  }
-
-  assert {
-    condition     = rg_plan.resource_changes[0].change.after.name == "rg-test-dev"
+    condition     = azurerm_resource_group.rg-test-dev.name == "rg-test-dev"
     error_message = "The resource group name is not rg-test-dev."
   }
 
   assert {
-    condition     = rg_plan.resource_changes[0].change.after.location == "Central India"
+    condition     = azurerm_resource_group.rg-test-dev.location == "Central India"
     error_message = "The resource group location is not Central India."
   }
 
   assert {
-    condition     = rg_plan.resource_changes[0].change.after.tags["Environment"] == "Test"
+    condition     = azurerm_resource_group.rg-test-dev.tags["Environment"] == "Test"
     error_message = "The Environment tag is not set to Test."
   }
 }
