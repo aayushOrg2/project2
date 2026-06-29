@@ -30,10 +30,26 @@ jobs:
       - uses: actions/checkout@v4
       - id: set-matrix
         run: |
-          # यह आपके modules/ फोल्डर के अंदर से सभी रिसोर्स पिक करेगा
-          # और workspace का नाम: {folder_name}-{environment} बना देगा
           ENV="${{ inputs.environment }}"
-          JSON_OUTPUT=$(ls -d modules/* | jq -R . | jq -s -c --arg env "$ENV" 'map({dir: ., ws: (. | split("/") | last + "-" + $env)})')
+          # यह कमांड सुनिश्चित करती है कि केवल फोल्डर ही पिक हों
+          JSON_OUTPUT=$(ls -d modules/* | grep "/" | jq -R . | jq -s -c --arg env "$ENV" 'map({dir: ., ws: (. | split("/") | last + "-" + $env)})')
           echo "matrix=$JSON_OUTPUT" >> $GITHUB_OUTPUT
 
-  
+
+  tflint:
+    needs: discover-resources
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        resource: ${{ fromJSON(needs.discover-resources.outputs.matrix) }}
+    steps:
+      - name: Call TFLint Workflow
+        uses: aayuORG1/project1/.github/workflows/docker-tflint.yml@main
+        with:
+          environment: ${{ inputs.environment }}
+          working_directory: ${{ matrix.resource.dir }}
+        secrets:
+          ARM_CLIENT_ID: ${{ vars.ARM_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ vars.ARM_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ vars.ARM_SUBSCRIPTION_ID }}
+          TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
