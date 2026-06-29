@@ -1,14 +1,11 @@
-output "resource_group_name" {
-  description = "The name of the resource group"
-  value       = azurerm_resource_group.example.name
+output "id" {
+  value = azurerm_resource_group.this.id
 }
 
-output "resource_group_location" {
-  description = "The location of the resource group"
-  value       = azurerm_resource_group.example.location
+output "name" {
+  value = azurerm_resource_group.this.name
 }
 
-output "resource_group_tags" {
-  description = "The tags of the resource group"
-  value       = azurerm_resource_group.example.tags
+output "location" {
+  value = azurerm_resource_group.this.location
 }
