@@ -1,4 +1,4 @@
-name: "Master Pipeline"
+name: "dynamic Pipeline"
 
 on:
   workflow_dispatch:
