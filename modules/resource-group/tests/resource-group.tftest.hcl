@@ -1,6 +1,5 @@
 run "resource_group_plan" {
 
-  command = plan
 
   assert {
     condition     = length(plan.resource_changes) == 1
@@ -8,17 +7,17 @@ run "resource_group_plan" {
   }
 
   assert {
-    condition = plan.resource_changes[0].type == "azurerm_resource_group"
+    condition = resource_changes[0].type == "azurerm_resource_group"
     error_message = "The planned resource must be an Azure Resource Group."
   }
 
   assert {
-    condition = plan.resource_changes[0].change.after.name == "rg-test-dev"
+    condition = resource_changes[0].change.after.name == "rg-test-dev"
     error_message = "Resource Group name is incorrect."
   }
 
   assert {
-    condition = plan.resource_changes[0].change.after.location == "Central India"
+    condition = resource_changes[0].change.after.location == "Central India"
     error_message = "Resource Group location is incorrect."
   }
 
