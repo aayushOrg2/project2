@@ -1,4 +1,4 @@
-name: "dynamic Pipeline"
+name: "Dynamic Terraform CI/CD"
 
 on:
   workflow_dispatch:
@@ -21,38 +21,54 @@ permissions:
   actions: read
 
 jobs:
-
-  discover-resources:
+  list-folders:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
-      has_resources: ${{ steps.set-matrix.outputs.has_resources }}
     steps:
-      - name: Checkout Org1 Repo
-        uses: actions/checkout@v4
-        with:
-          repository: aayuORG1/project1 
-          token: ${{ secrets.PAT_TOKEN }} 
-
+      - uses: actions/checkout@v4
       - id: set-matrix
         run: |
-          if [ -d "modules" ] && [ "$(ls -A modules/)" ]; then
-            ENV="${{ inputs.environment }}"
-            JSON_OUTPUT=$(ls -d modules/* | grep "/" | jq -R . | jq -s -c --arg env "$ENV" 'map({dir: ., ws: (. | split("/") | last + "-" + $env)})')
-            echo "matrix=$JSON_OUTPUT" >> $GITHUB_OUTPUT
-            echo "has_resources=true" >> $GITHUB_OUTPUT
-          else
-            echo "has_resources=false" >> $GITHUB_OUTPUT
-          fi
+          # 1. सभी फोल्डर ढूंढें 2. .github और .git हटाएं 3. आखिरी स्लैश (/) हटाएं
+          FOLDERS=$(ls -d */ | grep -vE '^\.github/|^\.git/' | sed 's/\///g' | jq -R . | jq -s -c '{folder: .}')
+          echo "matrix=$FOLDERS" >> $GITHUB_OUTPUT
+          echo "Generated Matrix: $FOLDERS"
 
-
-  tflint:
-    needs: discover-resources
+  run-terraform:
+    needs: [list-folders]
+    runs-on: ubuntu-latest
     strategy:
-      matrix:
-        resource: ${{ fromJSON(needs.discover-resources.outputs.matrix) }}    
-    uses: aayuORG1/project1/.github/workflows/docker-tflint.yml@main
-    with:
-      environment: ${{ inputs.environment }}
-      working_directory: ${{ matrix.resource.dir }}
-    secrets: inherit
+      fail-fast: false
+      matrix: ${{ fromJson(needs.list-folders.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Linting
+        uses: aayuORG1/project1/.github/workflows/docker-tflint.yml@main
+        with:
+          environment: ${{ inputs.environment }}
+          working_directory: ./${{ matrix.folder }}
+        secrets: inherit
+
+      - name: Terraform Plan
+        uses: aayuORG1/project1/.github/workflows/docker-tf-plan.yml@main
+        with:
+          environment: ${{ inputs.environment }}
+          working_directory: ./${{ matrix.folder }}
+        secrets: inherit
+
+      - name: Terraform Apply
+        if: inputs.action == 'apply'
+        uses: aayuORG1/project1/.github/workflows/docker-tf-apply.yml@main
+        with:
+          environment: ${{ inputs.environment }}
+          working_directory: ./${{ matrix.folder }}
+        secrets: inherit
+
+      - name: Terraform Destroy
+        if: inputs.action == 'destroy'
+        uses: aayuORG1/project1/.github/workflows/docker-tf-destroy.yml@main
+        with:
+          environment: ${{ inputs.environment }}
+          working_directory: ./${{ matrix.folder }}
+        secrets: inherit
