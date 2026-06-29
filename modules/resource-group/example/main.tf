@@ -2,11 +2,11 @@ module "resource_group" {
 
   source = "../"
 
-  name     = "rg-demo-dev"
+  name     = "rg-test-dev"
   location = "Central India"
 
   tags = {
-    Environment = "dev"
+    Environment = "Test"
     Owner       = "Terraform"
   }
 
