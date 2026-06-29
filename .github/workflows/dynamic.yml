@@ -21,28 +21,36 @@ permissions:
   actions: read
 
 jobs:
-  # 1. डायनामिक डिस्कवरी जॉब
+
   discover-resources:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
+      has_resources: ${{ steps.set-matrix.outputs.has_resources }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Org1 Repo
+        uses: actions/checkout@v4
+        with:
+          repository: aayuORG1/project1 
+          token: ${{ secrets.PAT_TOKEN }} 
+
       - id: set-matrix
         run: |
-          ENV="${{ inputs.environment }}"
-          JSON_OUTPUT=$(ls -d modules/* | grep "/" | jq -R . | jq -s -c --arg env "$ENV" 'map({dir: ., ws: (. | split("/") | last + "-" + $env)})')
-          echo "matrix=$JSON_OUTPUT" >> $GITHUB_OUTPUT
+          if [ -d "modules" ] && [ "$(ls -A modules/)" ]; then
+            ENV="${{ inputs.environment }}"
+            JSON_OUTPUT=$(ls -d modules/* | grep "/" | jq -R . | jq -s -c --arg env "$ENV" 'map({dir: ., ws: (. | split("/") | last + "-" + $env)})')
+            echo "matrix=$JSON_OUTPUT" >> $GITHUB_OUTPUT
+            echo "has_resources=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_resources=false" >> $GITHUB_OUTPUT
+          fi
 
-  # 2. tflint जॉब (अब बिल्कुल सही स्ट्रक्चर है)
+
   tflint:
     needs: discover-resources
     strategy:
       matrix:
-        # यहाँ हम matrix डिफाइन कर रहे हैं
-        resource: ${{ fromJSON(needs.discover-resources.outputs.matrix) }}
-    
-    # 'uses' को सीधे जॉब लेवल पर रखें (यहाँ runs-on और steps नहीं होने चाहिए)
+        resource: ${{ fromJSON(needs.discover-resources.outputs.matrix) }}    
     uses: aayuORG1/project1/.github/workflows/docker-tflint.yml@main
     with:
       environment: ${{ inputs.environment }}
