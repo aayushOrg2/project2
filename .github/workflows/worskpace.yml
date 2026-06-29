@@ -9,8 +9,8 @@ on:
         type: choice
         options:
           - dev
-          - qa
-          - prod
+          - sit
+          - production
       organization:
         description: "Terraform Cloud Organization"
         required: true
