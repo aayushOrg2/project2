@@ -26,7 +26,11 @@ jobs:
       # यहाँ environment इनपुट की कमी थी, इसे जोड़ें:
       environment: "dev" 
       working_directory: "modules/${{ inputs.module_name || 'resource-group' }}"
-    secrets: inherit # 'inherit' का उपयोग करना सबसे आसान है
+    secrets: 
+      TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
 
   validate:
     needs: bootstrap
@@ -34,7 +38,11 @@ jobs:
     with:
       environment: "dev"
       working_directory: "modules/${{ inputs.module_name || 'resource-group' }}"
-    secrets: inherit
+    secrets: 
+      TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
 
   tflint:
     needs: validate
@@ -42,15 +50,22 @@ jobs:
     with:
       environment: "dev"
       working_directory: "modules/${{ inputs.module_name || 'resource-group' }}"
-    secrets: inherit
-
+    secrets: 
+      TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
   trivy:
     needs: tflint
     uses: aayuORG1/project1/.github/workflows/docker-tfsec.yml@main
     with:
       environment: "dev"
       working_directory: "modules/${{ inputs.module_name || 'resource-group' }}"
-    secrets: inherit
+    secrets: 
+      TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
 
   terraform-test:
     needs: trivy
@@ -58,12 +73,19 @@ jobs:
     with:
       environment: "dev"
       working_directory: "modules/${{ inputs.module_name || 'resource-group' }}"
-    secrets: inherit
-
+    secrets: 
+      TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
   plan:
     needs: terraform-test
     uses: aayuORG1/project1/.github/workflows/docker-tf-plan.yml@main
     with:
       environment: "dev"
       working_directory: "modules/${{ inputs.module_name || 'resource-group' }}"
-    secrets: inherit
+    secrets: 
+      TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
