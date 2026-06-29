@@ -31,7 +31,22 @@ permissions:
   actions: read
 
 jobs:  
-  
+  detect-dir:
+    runs-on: ubuntu-latest
+    outputs:
+      dir: ${{ steps.set-dir.outputs.dir }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: set-dir
+        run: |       
+          INPUT_DIR="${{ inputs.working_directory }}"
+          if [[ "$INPUT_DIR" == "." ]]; then
+            # Yahan apna auto-detection logic lagayein
+            DETECTED=$(ls -d child-modules/* | head -n1) 
+            echo "dir=$DETECTED" >> "$GITHUB_OUTPUT"
+          else
+            echo "dir=$INPUT_DIR" >> "$GITHUB_OUTPUT"
+          fi
   tflint:
     uses: aayuORG1/project1/.github/workflows/docker-tflint.yml@main
     with:
