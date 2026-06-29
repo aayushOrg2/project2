@@ -22,7 +22,7 @@ run "resource_group_plan" {
   }
 
   assert {
-    condition = plan.resource_changes[0].change.after.tags["Environment"] == "Test"
+    condition = resource_changes[0].change.after.tags["Environment"] == "Test"
     error_message = "Environment tag should be 'Test'."
   }
 
