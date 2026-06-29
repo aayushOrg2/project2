@@ -31,28 +31,39 @@ permissions:
   actions: read
 
 jobs:  
-  detect-dir:
+  validate-access:
+    name: "Validate Branch & Env"
     runs-on: ubuntu-latest
-    outputs:
-      dir: ${{ steps.set-dir.outputs.dir }}
     steps:
-      - uses: actions/checkout@v4
-      - id: set-dir
-        run: |       
-          INPUT_DIR="${{ inputs.working_directory }}"
-          if [[ "$INPUT_DIR" == "." ]]; then
-            # Yahan apna auto-detection logic lagayein
-            DETECTED=$(ls -d child-modules/* | head -n1) 
-            echo "dir=$DETECTED" >> "$GITHUB_OUTPUT"
-          else
-            echo "dir=$INPUT_DIR" >> "$GITHUB_OUTPUT"
+      - name: Check Match
+        shell: bash
+        run: |
+          BRANCH=$(echo "${{ github.head_ref || github.ref_name }}" | tr '[:upper:]' '[:lower:]')
+          ENV="${{ inputs.environment }}"
+          VALID=false
+
+          echo "Validating: Branch='$BRANCH', Env='$ENV'"
+
+          if [[ "$BRANCH" == "main" && "$ENV" == "production" ]]; then
+            VALID=true
+          elif [[ "$BRANCH" =~ ^(dev|develop)$ && "$ENV" == "dev" ]]; then
+            VALID=true
+          elif [[ "$BRANCH" == feat/* && "$ENV" == "sit" ]]; then
+            VALID=true
           fi
+
+          if [[ "$VALID" == false ]]; then
+            echo "::error::Access Denied: Branch '$BRANCH' is not allowed to deploy to '$ENV'."
+            exit 1
+          fi
+          echo "Validation Passed."
+  
   tflint:
-    needs: detect-dir
+    needs: validate-access
     uses: aayuORG1/project1/.github/workflows/docker-tflint.yml@main
     with:
       environment: ${{ inputs.environment }}
-      working_directory: ${{ needs.detect-dir.outputs.dir }}
+      working_directory: ${{ inputs.working_directory }}
     secrets:
       ARM_CLIENT_ID: ${{ vars.ARM_CLIENT_ID }}
       ARM_TENANT_ID: ${{ vars.ARM_TENANT_ID }}
@@ -60,11 +71,11 @@ jobs:
       TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
 
   tfsec:
-    needs: detect-dir
+    needs: validate-access
     uses: aayuORG1/project1/.github/workflows/docker-tfsec.yml@main
     with:
       environment: ${{ inputs.environment }}
-      working_directory: ${{ needs.detect-dir.outputs.dir }}
+      working_directory: ${{ inputs.working_directory }}
     secrets:
       ARM_CLIENT_ID: ${{ vars.ARM_CLIENT_ID }}
       ARM_TENANT_ID: ${{ vars.ARM_TENANT_ID }}
@@ -72,11 +83,11 @@ jobs:
       TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
 
   tftest:
-    needs: detect-dir
+    needs: validate-access
     uses: aayuORG1/project1/.github/workflows/docker-tftest.yml@main
     with:
       environment: ${{ inputs.environment }}
-      working_directory: ${{ needs.detect-dir.outputs.dir }}
+      working_directory: ${{ inputs.working_directory }}
     secrets:
       ARM_CLIENT_ID: ${{ vars.ARM_CLIENT_ID }}
       ARM_TENANT_ID: ${{ vars.ARM_TENANT_ID }}
