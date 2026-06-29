@@ -1,5 +1,5 @@
 run "resource_group_plan" {
-
+command = plan
 
   assert {
     condition     = length(plan.resource_changes) == 1
