@@ -29,7 +29,8 @@ on:
 permissions:
   id-token: write
   contents: read
-
+  pull-requests: write
+  
 jobs:
 
   validate:  
@@ -107,7 +108,7 @@ jobs:
 
       - name: Create Pull Request
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           gh pr create \
             --base main \
