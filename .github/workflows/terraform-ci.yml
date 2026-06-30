@@ -28,7 +28,7 @@ on:
 
 permissions:
   id-token: write
-  contents: read
+  contents: write
   pull-requests: write
   
 jobs:
@@ -106,14 +106,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Create Pull Request
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-        run: |
-          gh pr create \
-            --repo ${{ github.repository }} \
-            --base main \
-            --head ${{ github.ref_name }} \
-            --title "Merge ${{ github.ref_name }} into main" \
-            --body "Auto-generated PR after manual validation approval"
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+          base: main
+          branch: ${{ github.ref_name }}
+          title: "Merge ${{ github.ref_name }} into main"
+          body: "Auto-generated PR after manual validation approval"
