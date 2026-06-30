@@ -115,6 +115,7 @@ jobs:
         with:
           token: ${{ secrets.GH_TOKEN }}
           base: main
-          branch: auto-pr/${{ github.ref_name }}
+          branch: auto-pr-${{ github.ref_name }}
+          delete-branch: true
           title: "Merge ${{ github.ref_name }} into main"
           body: "Auto-generated PR after manual validation approval"
