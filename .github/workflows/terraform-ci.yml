@@ -109,6 +109,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # full history, diff check ke liye zaroori
   
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
@@ -116,6 +118,7 @@ jobs:
           token: ${{ secrets.GH_TOKEN }}
           base: main
           branch: auto-pr-${{ github.ref_name }}
+          branch-suffix: timestamp   # unique branch har run ke liye
           delete-branch: true
           title: "Merge ${{ github.ref_name }} into main"
           body: "Auto-generated PR after manual validation approval"
