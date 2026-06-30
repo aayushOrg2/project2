@@ -33,7 +33,7 @@ permissions:
 jobs:
 
   validate:  
-    uses: aayuORG1/project1/.github/workflows/docker-tf-plan.yml@main
+    uses: aayuORG1/project1/.github/workflows/docker-tfvalidate.yml@main
     with:
       environment: ${{ inputs.environment }} 
       working_directory: "modules/${{ inputs.module_name || 'resource-group' }}"
