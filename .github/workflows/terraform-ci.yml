@@ -118,7 +118,10 @@ jobs:
           token: ${{ secrets.GH_TOKEN }}
           base: main
           branch: auto-pr-${{ github.ref_name }}
-          branch-suffix: timestamp   # unique branch har run ke liye
+          branch-suffix: timestamp
           delete-branch: true
           title: "Merge ${{ github.ref_name }} into main"
-          body: "Auto-generated PR after manual validation approval"
+          body: "Auto-generated PR after manual validation approval"        
+          commit-message: "Automated update from CI"
+          committer: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+          author: ${{ github.actor }} <${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com>
