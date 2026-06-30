@@ -99,21 +99,3 @@ jobs:
       ARM_CLIENT_ID: ${{ vars.ARM_CLIENT_ID }}
       ARM_TENANT_ID: ${{ vars.ARM_TENANT_ID }}
       ARM_SUBSCRIPTION_ID: ${{ vars.ARM_SUBSCRIPTION_ID }} 
-  create-pr:
-    needs: manual-validation
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Create Pull Request
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh pr create \
-            --repo ${{ github.repository }} \
-            --base main \
-            --head ${{ github.ref_name }} \
-            --title "Merge ${{ github.ref_name }} into main" \
-            --body "Auto-generated PR after manual validation approval"
-
-            
