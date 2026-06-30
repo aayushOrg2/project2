@@ -111,7 +111,8 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           gh pr create \
-            --base main \
-            --head develop \
-            --title "Merge develop into main" \
-            --body "Auto-generated PR after manual validation approval"
+          --repo ${{ github.repository }} \
+          --base main \
+          --head ${{ github.ref_name }} \
+          --title "Merge ${{ github.ref_name }} into main" \
+          --body "Auto-generated PR after manual validation approval"
