@@ -1,0 +1,59 @@
+name: "Terraform Post-PR Pipeline"
+
+on:
+  pull_request:
+    types: [closed]   # Trigger jab PR merge ho jaye
+    branches: [main]
+
+jobs:
+  lint:
+    if: github.event.pull_request.merged == true
+    uses: aayuORG1/project1/.github/workflows/docker-tflint.yml@main
+    with:
+      environment: dev
+      working_directory: "modules/resource-group"
+    secrets: inherit
+
+  sec:
+    needs: lint
+    if: github.event.pull_request.merged == true
+    uses: aayuORG1/project1/.github/workflows/docker-tfsec.yml@main
+    with:
+      environment: dev
+      working_directory: "modules/resource-group"
+    secrets: inherit
+
+  test:
+    needs: sec
+    if: github.event.pull_request.merged == true
+    uses: aayuORG1/project1/.github/workflows/docker-tftest.yml@main
+    with:
+      environment: dev
+      working_directory: "modules/resource-group"
+    secrets: inherit
+
+  version:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Bump semantic version
+        id: version
+        uses: paulhatch/semantic-version@v5
+        with:
+          tag_prefix: "v"
+          major_pattern: "(BREAKING CHANGE)"
+          minor_pattern: "(feat)"
+          patch_pattern: "(fix)"
+          bump_each_commit: true
+
+      - name: Create Release
+        uses: actions/create-release@v1
+        with:
+          tag_name: ${{ steps.version.outputs.version }}
+          release_name: Release ${{ steps.version.outputs.version }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
