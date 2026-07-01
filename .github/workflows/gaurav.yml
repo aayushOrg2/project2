@@ -1,4 +1,4 @@
-name: "pr CI Pipeline"
+name: "Terraform CI Pipeline"
 
 on:
   workflow_dispatch:
