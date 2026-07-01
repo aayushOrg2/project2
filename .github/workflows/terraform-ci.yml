@@ -1,10 +1,7 @@
 name: "Terraform CI Pipeline"
 
 on:
-  push:
-    branches: [develop, 'feature/**']
-  pull_request:
-    branches: [main]
+  
   workflow_dispatch:
     inputs:
       environment:
@@ -110,15 +107,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0   # full history, diff check ke liye zaroori
-  
+          fetch-depth: 0
+
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GH_TOKEN }}
           base: main
-          branch: auto-pr-${{ github.ref_name }}
-          branch-suffix: timestamp   # unique branch har run ke liye
+          # 'head' ko hata diya gaya hai, ye automatically current branch lega
+          branch: auto-pr-develop
+          branch-suffix: timestamp 
           delete-branch: true
-          title: "Merge ${{ github.ref_name }} into main"
+          title: "Merge develop into main"
           body: "Auto-generated PR after manual validation approval"
