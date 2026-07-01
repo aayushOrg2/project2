@@ -107,15 +107,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0   # full history, diff check ke liye zaroori
-  
+          fetch-depth: 0
+
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GH_TOKEN }}
           base: main
-          head: develop # Hardcode karke dekhein
+          # 'head' ko hata diya gaya hai, ye automatically current branch lega
           branch: auto-pr-develop
+          branch-suffix: timestamp 
           delete-branch: true
           title: "Merge develop into main"
           body: "Auto-generated PR after manual validation approval"
