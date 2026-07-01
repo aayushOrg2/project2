@@ -114,8 +114,8 @@ jobs:
         with:
           token: ${{ secrets.GH_TOKEN }}
           base: main
-          branch: auto-pr-${{ github.ref_name }}
-          branch-suffix: timestamp   # unique branch har run ke liye
+          head: develop # Hardcode karke dekhein
+          branch: auto-pr-develop
           delete-branch: true
-          title: "Merge ${{ github.ref_name }} into main"
+          title: "Merge develop into main"
           body: "Auto-generated PR after manual validation approval"
