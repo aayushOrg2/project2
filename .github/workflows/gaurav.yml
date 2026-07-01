@@ -1,0 +1,104 @@
+name: "pr CI Pipeline"
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environment"
+        required: true
+        type: choice
+        options:
+          - dev
+          - sit
+          - production
+      organization:
+        description: "Terraform Cloud Organization"
+        required: true
+        type: string
+      module_name:
+        description: "Child module name"
+        required: true
+        default: "resource-group"
+        type: choice
+        options: [resource-group, subnet, terraform-bootstrap, virtual-network]
+
+permissions:
+  id-token: write
+  contents: write
+  pull-requests: write
+
+jobs:
+
+  validate:  
+    uses: aayuORG1/project1/.github/workflows/docker-tfvalidate.yml@main
+    with:
+      environment: ${{ inputs.environment }} 
+      working_directory: "modules/${{ inputs.module_name || 'resource-group' }}"
+    secrets: 
+      TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+
+  tflint:
+    needs: validate
+    uses: aayuORG1/project1/.github/workflows/docker-tflint.yml@main
+    with:
+      environment: ${{ inputs.environment }} 
+      working_directory: "modules/${{ inputs.module_name || 'resource-group' }}"
+    secrets: 
+      TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+
+  tfsec:
+    needs: tflint
+    uses: aayuORG1/project1/.github/workflows/docker-tfsec.yml@main
+    with:
+      environment: ${{ inputs.environment }} 
+      working_directory: "modules/${{ inputs.module_name || 'resource-group' }}"
+    secrets: 
+      TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+
+  terraform-test:
+    needs: tfsec
+    uses: aayuORG1/project1/.github/workflows/docker-tftest.yml@main
+    with:
+      environment: ${{ inputs.environment }} 
+      working_directory: "modules/${{ inputs.module_name || 'resource-group' }}"
+    secrets: 
+      TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+
+  plan:
+    needs: terraform-test
+    uses: aayuORG1/project1/.github/workflows/docker-tf-plan.yml@main
+    with:
+      environment: ${{ inputs.environment }} 
+      working_directory: "modules/${{ inputs.module_name || 'resource-group' }}"
+    secrets: 
+      TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+
+  create-pr:
+    needs: plan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
